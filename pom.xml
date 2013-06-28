@@ -8,6 +8,16 @@
     <version>1.0.0-SNAPSHOT</version>
     <packaging>war</packaging>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    
+    <url>https://github.com/stephanme/cloud-helloworld</url>
+    
     <properties>
         <!-- Properties that hold host and port of proxy should you have one - otherwise remove all occurrences of the properties -->
         <proxy.host>${env.PROXY_HOST}</proxy.host>
