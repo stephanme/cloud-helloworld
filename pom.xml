@@ -47,6 +47,7 @@
 
         <!-- Property setting source encoding to UTF-8 -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
     <dependencies>
@@ -126,6 +127,9 @@
                 <version>2.1</version>
                 <configuration>
                     <warName>${project.artifactId}</warName>
+                    <archive>
+                        <manifestFile>src/main/webapp/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
                 </configuration>
             </plugin>
 
