@@ -38,3 +38,11 @@ Prerequisites:
 - M2Eclipse (with WTP extension)
 
 Import the project as 'Existing Maven Project': File -> Import... -> Maven -> Existing Maven Projects
+
+# Building with Jenkins
+
+- [CI Job](https://jenkinsp1940131088trial.hanatrial.ondemand.com/job/cloud-hello-world/) - builds the project and runs the integration tests in cloud
+
+For more information about running Jenkins on Jenkins on SAP HANA Cloud Platform, you can read the following [Blog: Run your own Jenkins on SAP HANA Cloud Platform](http://scn.sap.com/community/developer-center/cloud-platform/blog/2013/10/11/run-your-own-jenkins-on-sap-hana-cloud-platform) and have a look at 
+https://github.com/SAP/cloud-jenkins.
+
