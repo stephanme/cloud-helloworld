@@ -16,9 +16,6 @@ For general information regarding SDK samples see SAP_CLOUD_SDK/samples/readme.t
 # Building 
 
 Needed environment variables for build:
-- SAP_CLOUD_SDK - path to SAP HANA Cloud SDK. Even though all hello world dependencies are
-  standard APIs that are available on Maven Central, we reference them from the api folder
-  provided as part of the SDK. Just to demonstrate how to reference the HANA cloud API.
 - PROXY_HOST, PROXY_PORT, SAP_CLOUD_ACCOUNT, SAP_CLOUD_USERNAME SAP_CLOUD_PASSWORD for 
   running integration test in the cloud
 

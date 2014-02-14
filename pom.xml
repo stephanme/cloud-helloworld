@@ -23,8 +23,9 @@
         <proxy.host>${env.PROXY_HOST}</proxy.host>
         <proxy.port>${env.PROXY_PORT}</proxy.port>
 
-        <!-- Properties that hold information on the location and version of the SAP HANA Cloud SDK -->
-        <sap.cloud.sdk.path>${env.SAP_CLOUD_SDK}</sap.cloud.sdk.path>
+        <!-- Properties that hold information on the location and version of the SAP HANA Cloud Platform SDK -->
+        <sap.cloud.sdk.path>${project.build.directory}/sdk</sap.cloud.sdk.path>
+        <sap.cloud.sdk.version>1.46.16.5</sap.cloud.sdk.version>
 
         <!-- Property that holds supported JDK version for the given SAP HANA Cloud SDK -->
         <sap.cloud.jdk.version>1.6</sap.cloud.jdk.version>
@@ -51,20 +52,12 @@
     </properties>
 
     <dependencies>
-        <!-- Required for compilation and provided at runtime (SAP HANA Cloud SDK API libraries) -->
+        <!-- The SAP HANA Cloud Platform Java Web API -->
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet</artifactId>
-            <version>3.0.0.v201103241009</version>
-            <scope>system</scope>
-            <systemPath>${sap.cloud.sdk.path}/api/javax.servlet-3.0.0.v201103241009.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.2</version>
-            <scope>system</scope>
-            <systemPath>${sap.cloud.sdk.path}/api/slf4j-api-1.7.2.jar</systemPath>
+            <groupId>com.sap.cloud</groupId>
+            <artifactId>neo-java-web-api</artifactId>
+            <version>${sap.cloud.sdk.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Required for testing -->
@@ -232,6 +225,33 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <executions>
+                        <!-- Extract SDK for integration tests -->
+                        <execution>
+                            <id>extract-sdk</id>
+                            <phase>pre-integration-test</phase>
+                            <goals>
+                                <goal>unpack</goal>
+                            </goals>
+                            <configuration>
+                                <overWriteReleases>false</overWriteReleases>
+                                <overWriteSnapshots>false</overWriteSnapshots>
+                                <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>com.sap.cloud</groupId>
+                                        <artifactId>neo-java-web-sdk</artifactId>
+                                        <version>${sap.cloud.sdk.version}</version>
+                                        <type>zip</type>
+                                        <outputDirectory>${sap.cloud.sdk.path}</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -321,6 +341,9 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>                        
+                        <artifactId>maven-dependency-plugin</artifactId>
                     </plugin>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
@@ -440,6 +463,9 @@
                                 </configuration>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>                        
+                        <artifactId>maven-dependency-plugin</artifactId>
                     </plugin>
                     <plugin>
                         <artifactId>maven-antrun-plugin</artifactId>
