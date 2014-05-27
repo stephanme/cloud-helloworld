@@ -25,7 +25,7 @@
 
         <!-- Properties that hold information on the location and version of the SAP HANA Cloud Platform SDK -->
         <sap.cloud.sdk.path>${project.build.directory}/sdk</sap.cloud.sdk.path>
-        <sap.cloud.sdk.version>1.46.16.5</sap.cloud.sdk.version>
+        <sap.cloud.sdk.version>1.53.18.2</sap.cloud.sdk.version>
 
         <!-- Property that holds supported JDK version for the given SAP HANA Cloud SDK -->
         <sap.cloud.jdk.version>1.6</sap.cloud.jdk.version>
@@ -225,33 +225,6 @@
                         </lifecycleMappingMetadata>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <executions>
-                        <!-- Extract SDK for integration tests -->
-                        <execution>
-                            <id>extract-sdk</id>
-                            <phase>pre-integration-test</phase>
-                            <goals>
-                                <goal>unpack</goal>
-                            </goals>
-                            <configuration>
-                                <overWriteReleases>false</overWriteReleases>
-                                <overWriteSnapshots>false</overWriteSnapshots>
-                                <outputAbsoluteArtifactFilename>true</outputAbsoluteArtifactFilename>
-                                <artifactItems>
-                                    <artifactItem>
-                                        <groupId>com.sap.cloud</groupId>
-                                        <artifactId>neo-java-web-sdk</artifactId>
-                                        <version>${sap.cloud.sdk.version}</version>
-                                        <type>zip</type>
-                                        <outputDirectory>${sap.cloud.sdk.path}</outputDirectory>
-                                    </artifactItem>
-                                </artifactItems>
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -277,34 +250,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <!-- Choose correct command line scripts for interaction with SAP HANA Cloud based on detected operating system -->
-        <profile>
-            <id>unix-scripts</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <os>
-                    <family>Unix</family>
-                </os>
-            </activation>
-            <properties>
-                <sap.cloud.console.shell>sh</sap.cloud.console.shell>
-                <sap.cloud.console.script>neo.sh</sap.cloud.console.script>
-            </properties>
-        </profile>
-        <profile>
-            <id>windows-scripts</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <os>
-                    <family>Windows</family>
-                </os>
-            </activation>
-            <properties>
-                <sap.cloud.console.shell>cmd</sap.cloud.console.shell>
-                <sap.cloud.console.script>/c neo.bat</sap.cloud.console.script>
-            </properties>
         </profile>
 
         <!-- Install local server from the P2 repository that is contained inside the SAP HANA Cloud SDK, deploy the built web application 
@@ -342,52 +287,50 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>                        
-                        <artifactId>maven-dependency-plugin</artifactId>
-                    </plugin>
                     <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
+                        <groupId>com.sap.cloud</groupId>
+                        <artifactId>neo-java-web-maven-plugin</artifactId>
+                        <version>${sap.cloud.sdk.version}</version>
                         <executions>
                             <execution>
-                                <id>prepare-local-server</id>
+                                <id>setup-local-server</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
-                                    <goal>run</goal>
+                                    <goal>install-sdk</goal>
+                                    <goal>install-local</goal>
+                                    <goal>deploy-local</goal>
                                 </goals>
-                                <configuration>
-                                    <target>
-                                        <copy file="${project.build.directory}/${project.artifactId}.war" todir="${local.server.root}/pickup" />
-                                        <exec dir="${sap.cloud.sdk.path}/tools" executable="${sap.cloud.console.shell}"
-                                            failonerror="true">
-                                            <arg
-                                                line="${sap.cloud.console.script} install-local --location ${local.server.root} --jmxPort ${local.server.jmx.port} --httpPort ${local.server.http.port} --httpsPort ${local.server.https.port} --ajpPort ${local.server.ajp.port} --httpProxyHost ${proxy.host} --httpProxyPort ${proxy.port} --httpsProxyHost ${proxy.host} --httpsProxyPort ${proxy.port}" />
-                                        </exec>
-                                        <exec dir="${sap.cloud.sdk.path}/tools" executable="${sap.cloud.console.shell}"
-                                            failonerror="false">
-                                            <arg
-                                                line="${sap.cloud.console.script} start-local --location ${local.server.root} --consolePort ${local.server.console.port} --waitUrl http://${local.server.host}:${local.server.http.port}/${project.artifactId}/" />
-                                        </exec>
-                                    </target>
-                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>start-local-server</id>
+                                <phase>integration-test</phase>
+                                <goals>
+                                    <goal>start-local</goal>
+                                </goals>
                             </execution>
                             <execution>
                                 <id>cleanup-local-server</id>
                                 <phase>post-integration-test</phase>
                                 <goals>
-                                    <goal>run</goal>
+                                    <goal>stop-local</goal>
                                 </goals>
-                                <configuration>
-                                    <target>
-                                        <exec dir="${sap.cloud.sdk.path}/tools" executable="${sap.cloud.console.shell}"
-                                            failonerror="true">
-                                            <arg
-                                                line="${sap.cloud.console.script} stop-local --consolePort ${local.server.console.port}" />
-                                        </exec>
-                                    </target>
-                                </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <sdkInstallPath>${sap.cloud.sdk.path}</sdkInstallPath>
+                            <location>${local.server.root}</location>
+                            <consolePort>${local.server.console.port}</consolePort>
+                            <httpPort>${local.server.http.port}</httpPort>
+                            <httpsPort>${local.server.https.port}</httpsPort>
+                            <jmxPort>${local.server.jmx.port}</jmxPort>
+                            <ajpPort>${local.server.ajp.port}</ajpPort>
+                            <httpProxyHost>${proxy.host}</httpProxyHost>
+                            <httpProxyPort>${proxy.port}</httpProxyPort>
+                            <httpsProxyHost>${proxy.host}</httpsProxyHost>
+                            <httpsProxyPort>${proxy.port}</httpsProxyPort>
+                            <waitUrl>http://${local.server.host}:${local.server.http.port}/${project.artifactId}/</waitUrl>
+                            <source>${project.build.directory}/${project.artifactId}.war</source>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>
@@ -464,68 +407,43 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>                        
-                        <artifactId>maven-dependency-plugin</artifactId>
-                    </plugin>
                     <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <version>1.7</version>
+                        <groupId>com.sap.cloud</groupId>
+                        <artifactId>neo-java-web-maven-plugin</artifactId>
+                        <version>${sap.cloud.sdk.version}</version>
                         <executions>
                             <execution>
                                 <id>prepare-cloud-server</id>
                                 <phase>pre-integration-test</phase>
                                 <goals>
-                                    <goal>run</goal>
+                                    <goal>install-sdk</goal>
+                                    <goal>stop</goal>
+                                    <goal>deploy</goal>
+                                    <goal>start</goal>
                                 </goals>
-                                <configuration>
-                                    <target>
-                                        <exec dir="${sap.cloud.sdk.path}/tools" executable="${sap.cloud.console.shell}"
-                                            failonerror="true">
-                                            <env key="HTTPS_PROXY_HOST" value="${proxy.host}" />
-                                            <env key="HTTPS_PROXY_PORT" value="${proxy.port}" />
-                                            <env key="https_proxy" value="https://${proxy.host}:${proxy.port}/" />
-                                            <arg
-                                                line="${sap.cloud.console.script} stop -account ${sap.cloud.account} -application ${sap.cloud.application} -host https://${sap.cloud.host} -user ${sap.cloud.username} -password ${sap.cloud.password} -sync" />
-                                        </exec>
-                                        <exec dir="${sap.cloud.sdk.path}/tools" executable="${sap.cloud.console.shell}"
-                                            failonerror="true">
-                                            <env key="HTTPS_PROXY_HOST" value="${proxy.host}" />
-                                            <env key="HTTPS_PROXY_PORT" value="${proxy.port}" />
-                                            <env key="https_proxy" value="https://${proxy.host}:${proxy.port}/" />
-                                            <arg
-                                                line="${sap.cloud.console.script} deploy -account ${sap.cloud.account} -application ${sap.cloud.application} -host https://${sap.cloud.host} -user ${sap.cloud.username} -password ${sap.cloud.password} -source ${project.build.directory}/${project.artifactId}.war" />
-                                        </exec>
-                                        <exec dir="${sap.cloud.sdk.path}/tools" executable="${sap.cloud.console.shell}"
-                                            failonerror="true">
-                                            <env key="HTTPS_PROXY_HOST" value="${proxy.host}" />
-                                            <env key="HTTPS_PROXY_PORT" value="${proxy.port}" />
-                                            <env key="https_proxy" value="https://${proxy.host}:${proxy.port}/" />
-                                            <arg
-                                                line="${sap.cloud.console.script} start -account ${sap.cloud.account} -application ${sap.cloud.application} -host https://${sap.cloud.host} -user ${sap.cloud.username} -password ${sap.cloud.password} -sync" />
-                                        </exec>
-                                    </target>
-                                </configuration>
                             </execution>
                             <execution>
                                 <id>cleanup-cloud-server</id>
                                 <phase>post-integration-test</phase>
                                 <goals>
-                                    <goal>run</goal>
+                                    <goal>stop</goal>
                                 </goals>
-                                <configuration>
-                                    <target>
-                                        <exec dir="${sap.cloud.sdk.path}/tools" executable="${sap.cloud.console.shell}"
-                                            failonerror="true">
-                                            <env key="HTTPS_PROXY_HOST" value="${proxy.host}" />
-                                            <env key="HTTPS_PROXY_PORT" value="${proxy.port}" />
-                                            <env key="https_proxy" value="https://${proxy.host}:${proxy.port}/" />
-                                            <arg
-                                                line="${sap.cloud.console.script} stop -account ${sap.cloud.account} -application ${sap.cloud.application} -host https://${sap.cloud.host} -user ${sap.cloud.username} -password ${sap.cloud.password} -sync" />
-                                        </exec>
-                                    </target>
-                                </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <sdkInstallPath>${sap.cloud.sdk.path}</sdkInstallPath>
+                            <host>${sap.cloud.host}</host>
+                            <account>${sap.cloud.account}</account>
+                            <application>${sap.cloud.application}</application>
+                            <user>${sap.cloud.username}</user>
+                            <password>${sap.cloud.password}</password>
+                            <source>${project.build.directory}/${project.artifactId}.war</source>
+                            <synchronous>true</synchronous>
+                            <consoleHttpProxyHost>${proxy.host}</consoleHttpProxyHost>
+                            <consoleHttpProxyPort>${proxy.port}</consoleHttpProxyPort>
+                            <consoleHttpsProxyHost>${proxy.host}</consoleHttpsProxyHost>
+                            <consoleHttpsProxyPort>${proxy.port}</consoleHttpsProxyPort>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <artifactId>maven-failsafe-plugin</artifactId>

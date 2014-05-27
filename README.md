@@ -5,7 +5,7 @@ Hello World demo project for SAP HANA Cloud Platform https://account.hanatrial.o
 
 This hello world sample is based on the hello sample that you find in the SDK. The SDK is 
 provided under the SAP DEVELOPER LICENSE AGREEMENT that you find at 
-https://tools.hana.ondemand.com/developer-license-2.0.0.txt
+https://tools.hana.ondemand.com/developer-license-3.0.0.txt
 
 Changes compared to original sample:
 - use standard Maven layout
